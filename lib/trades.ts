@@ -115,7 +115,9 @@ export const monetizationPlan = [
 ]
 
 // Generate payoff curve data for chart
-export function generatePayoffData(trade: Trade) {
+// Optionally pass a custom premium (e.g. live mid) to override the mock premium
+export function generatePayoffData(trade: Trade, overridePremium?: number) {
+  const premium = overridePremium ?? trade.totalPremium
   const points = []
   const low = trade.strike * 0.55
   const high = trade.strike * 1.45
@@ -124,7 +126,7 @@ export function generatePayoffData(trade: Trade) {
   for (let spot = low; spot <= high; spot += step) {
     const callPayoff = Math.max(spot - trade.strike, 0)
     const putPayoff = Math.max(trade.strike - spot, 0)
-    const pnl = (callPayoff + putPayoff - trade.totalPremium) * 100
+    const pnl = (callPayoff + putPayoff - premium) * 100
     points.push({
       spot: parseFloat(spot.toFixed(2)),
       pnl: parseFloat(pnl.toFixed(0)),
