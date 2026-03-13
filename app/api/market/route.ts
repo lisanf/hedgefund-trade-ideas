@@ -23,13 +23,13 @@ const YF_HEADERS = {
   Referer: 'https://finance.yahoo.com/',
 }
 
-// Cache response for 5 minutes to avoid hammering Yahoo
-export const revalidate = 300
+
+export const dynamic = 'force-dynamic'
 
 async function fetchSpot(): Promise<SpotData | null> {
   try {
     const url = `https://query1.finance.yahoo.com/v8/finance/chart/EWZ?interval=1m&range=1d`
-    const res = await fetch(url, { headers: YF_HEADERS, next: { revalidate: 60 } })
+    const res = await fetch(url, { headers: YF_HEADERS, cache: 'no-store' })
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
     const json = await res.json()
 
@@ -57,7 +57,7 @@ async function fetchOptionLegs(
     if (!timestamp) throw new Error(`No timestamp for ${expiryKey}`)
 
     const url = `https://query2.finance.yahoo.com/v7/finance/options/EWZ?date=${timestamp}`
-    const res = await fetch(url, { headers: YF_HEADERS, next: { revalidate: 300 } })
+    const res = await fetch(url, { headers: YF_HEADERS, cache: 'no-store' })
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
     const json = await res.json()
 
