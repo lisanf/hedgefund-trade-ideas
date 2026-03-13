@@ -1,10 +1,10 @@
 import type { Metadata } from 'next'
 import './globals.css'
-import { MarketDataProvider } from '@/components/MarketDataProvider'
+import { MarketProvider } from '@/components/MarketProvider'
 
 export const metadata: Metadata = {
-  title: 'Signals — Investment Ideas',
-  description: 'Curated trade ideas and market analysis.',
+  title: 'Signals — Trade Ideas',
+  description: 'Structured trade ideas around catalysts and volatility.',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -15,9 +15,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </head>
       <body>
-        <MarketDataProvider>
-          {children}
-        </MarketDataProvider>
+        <MarketProvider>{children}</MarketProvider>
       </body>
     </html>
   )
