@@ -1,8 +1,11 @@
 'use client'
 
-import { SPOT_PRICE } from '@/lib/trades'
+import SpotBadge from './SpotBadge'
+import { useMarket } from './MarketDataProvider'
 
 export default function Hero() {
+  const { data } = useMarket()
+
   const today = new Date().toLocaleDateString('en-US', {
     month: 'long', day: 'numeric', year: 'numeric'
   })
@@ -15,11 +18,9 @@ export default function Hero() {
           🇧🇷 EWZ
         </span>
         <span className="text-muted text-xs font-mono uppercase tracking-widest">
-          Brazil iShares ETF · Spot {SPOT_PRICE}
+          iShares MSCI Brazil ETF · Oct 2026 Election
         </span>
-        <span className="ml-auto text-muted text-xs font-mono">
-          {today}
-        </span>
+        <span className="ml-auto text-muted text-xs font-mono">{today}</span>
       </div>
 
       {/* Headline */}
@@ -32,7 +33,12 @@ export default function Hero() {
 
       <hr className="rule mb-8 animate-fade-up animate-fade-up-delay-2" />
 
-      {/* Thesis block */}
+      {/* Live Spot price block */}
+      <div className="bg-white border border-border rounded-2xl px-6 py-5 mb-10 animate-fade-up animate-fade-up-delay-2">
+        <SpotBadge size="md" />
+      </div>
+
+      {/* Thesis + Key context */}
       <div className="grid md:grid-cols-5 gap-10 mb-14">
         <div className="md:col-span-3 animate-fade-up animate-fade-up-delay-3">
           <p className="text-sm font-mono text-muted uppercase tracking-widest mb-3">20-Second Thesis</p>
@@ -44,29 +50,29 @@ export default function Hero() {
           </p>
         </div>
 
-        {/* Key stats */}
         <div className="md:col-span-2 animate-fade-up animate-fade-up-delay-4">
           <p className="text-sm font-mono text-muted uppercase tracking-widest mb-3">Key Context</p>
-          <div className="space-y-3">
+          <div className="space-y-0">
             {[
-              { label: 'EWZ Spot', value: `$${SPOT_PRICE}`, note: 'iShares MSCI Brazil ETF' },
               { label: '1st Round', value: 'Oct 4, 2026', note: 'Brazil Federal Election' },
               { label: 'Runoff (if needed)', value: 'Oct 25, 2026', note: 'Tight race per latest polls' },
-              { label: 'Strategy', value: 'Long Straddle', note: 'ATM, two expiry windows' },
+              { label: 'Strategy', value: 'Long Straddle', note: 'ATM · two expiry windows' },
+              { label: 'Trade 1 Expiry', value: 'Oct 16, 2026', note: 'Election-only window' },
+              { label: 'Trade 2 Expiry', value: 'Nov 20, 2026', note: 'Covers potential runoff' },
             ].map((stat) => (
               <div key={stat.label} className="flex items-start justify-between py-2.5 border-b border-border last:border-0">
                 <div>
                   <span className="text-xs text-muted font-body block">{stat.label}</span>
                   <span className="text-xs text-muted/70 font-body">{stat.note}</span>
                 </div>
-                <span className="stat-value text-sm text-ink font-medium">{stat.value}</span>
+                <span className="stat-value text-sm text-ink font-medium text-right">{stat.value}</span>
               </div>
             ))}
           </div>
         </div>
       </div>
 
-      {/* Why vol? Strip */}
+      {/* Why vol strip */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 animate-fade-up animate-fade-up-delay-5">
         {[
           {
@@ -77,12 +83,12 @@ export default function Hero() {
           {
             number: '02',
             title: 'Binary Event Risk',
-            body: 'Brazil elections carry real policy discontinuity risk. Market direction depends heavily on winner\'s fiscal stance.',
+            body: 'Brazil elections carry real policy discontinuity risk. Market direction depends heavily on the winner\'s fiscal stance.',
           },
           {
             number: '03',
             title: 'Options Affordability',
-            body: 'IV levels reflect uncertainty but a large enough realized move — or pre-election ramp — can monetize the position.',
+            body: 'IV levels reflect uncertainty but a large enough realized move — or pre-election IV ramp — can monetize the position.',
           },
         ].map((item) => (
           <div key={item.number} className="bg-white border border-border rounded-xl p-5 hover:border-brazil-green/30 transition-colors">
