@@ -3,8 +3,8 @@ import './globals.css'
 import { MarketDataProvider } from '@/components/MarketDataProvider'
 
 export const metadata: Metadata = {
-  title: 'Trade Ideas — EWZ Long Volatility · Brazil 2026',
-  description: 'Structured long-vol trade ideas around Brazil federal elections 2026. EWZ straddle, two expiry windows.',
+  title: 'Signals — Investment Ideas',
+  description: 'Curated trade ideas and market analysis.',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
