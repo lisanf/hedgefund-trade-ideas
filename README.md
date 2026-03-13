@@ -1,0 +1,1 @@
+# hedgefund-trade-ideas
