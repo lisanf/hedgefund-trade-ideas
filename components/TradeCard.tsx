@@ -12,149 +12,128 @@ interface Props {
 
 export default function TradeCard({ trade, index }: Props) {
   const isGreen = trade.color === 'green'
-  const accentClass = isGreen ? 'text-brazil-green' : 'text-brazil-blue'
-  const borderClass = isGreen ? 'border-brazil-green/20' : 'border-brazil-blue/20'
-  const headerBg = isGreen ? 'bg-brazil-green/5 border-brazil-green/15' : 'bg-brazil-blue/5 border-brazil-blue/15'
-  const badgeBg = isGreen ? 'bg-brazil-green text-white' : 'bg-brazil-blue text-white'
+  const accentClass = isGreen ? 'text-br-green' : 'text-br-blue'
+  const borderAccent = isGreen ? 'border-br-green/20' : 'border-br-blue/20'
+  const bgAccent = isGreen ? 'bg-br-green/5' : 'bg-br-blue/5'
 
   const { data, loading } = useMarket()
   const liveStraddle = data?.straddles.find((s) => s.tradeId === trade.id)
+  const isLive = data?.source === 'live'
 
-  // Prefer live totalMid, fall back to totalLast, then mock
   const displayTotal = liveStraddle?.totalMid
     ?? liveStraddle?.totalLast
     ?? trade.totalPremium
 
-  // Recalculate breakevens with live total
-  const liveBreakevenLow = trade.strike - displayTotal
-  const liveBreakevenHigh = trade.strike + displayTotal
   const currentSpot = data?.spot?.price ?? SPOT_PRICE
+  const liveBELow = trade.strike - displayTotal
+  const liveBEHigh = trade.strike + displayTotal
   const liveMoveHurdle = ((displayTotal / currentSpot) * 100).toFixed(1)
 
-  const isLive = data?.source === 'live'
-
   return (
-    <div
-      className={`bg-white border rounded-2xl overflow-hidden transition-shadow hover:shadow-lg ${borderClass}`}
-      style={{ animationDelay: `${index * 0.15}s` }}
-    >
-      {/* Header */}
-      <div className={`px-6 py-5 border-b ${headerBg}`}>
-        <div className="flex items-start justify-between mb-3">
-          <span className={`text-xs font-mono font-medium px-2.5 py-1 rounded-full ${badgeBg}`}>
+    <div className={`card overflow-hidden border ${borderAccent} transition-all hover:shadow-md`}>
+      {/* Card header band */}
+      <div className={`px-5 py-4 border-b border-rule flex items-center justify-between ${bgAccent}`}>
+        <div className="flex items-center gap-2.5">
+          <span className={`font-mono text-[10px] font-medium px-2 py-0.5 rounded ${
+            isGreen ? 'bg-br-green text-white' : 'bg-br-blue text-white'
+          }`}>
             {trade.badge}
           </span>
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-mono text-muted">{trade.ticker}</span>
-            {isLive && (
-              <span className="flex items-center gap-1 text-xs font-mono text-profit">
-                <span className="w-1.5 h-1.5 rounded-full bg-profit animate-pulse inline-block" />
-                Live
-              </span>
-            )}
+          <span className="label">{trade.ticker}</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="label">{trade.expiry}</span>
+          {isLive && (
+            <span className="flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-profit animate-pulse" />
+              <span className="font-mono text-[10px] text-profit">LIVE</span>
+            </span>
+          )}
+        </div>
+      </div>
+
+      <div className="px-5 py-5">
+        {/* Title */}
+        <h2 className="heading-lg text-xl text-ink mb-0.5">{trade.title}</h2>
+        <p className="text-sm font-sans text-secondary mb-5">{trade.subtitle}</p>
+
+        {/* Move hurdle hero stat */}
+        <div className={`rounded-xl px-4 py-3.5 mb-5 flex items-center justify-between ${bgAccent}`}>
+          <div>
+            <p className="label mb-1">Move hurdle vs spot</p>
+            <p className={`font-mono text-2xl font-medium ${loading ? 'opacity-30' : ''} text-ink`}>
+              {loading ? '—' : `${liveMoveHurdle}%`}
+            </p>
+          </div>
+          <div className="text-right">
+            <p className="label mb-1">Total cost</p>
+            <p className={`font-mono text-lg font-medium ${accentClass} ${loading ? 'opacity-30' : ''}`}>
+              {loading ? '—' : fmt(displayTotal)}<span className="font-mono text-xs text-tertiary ml-1">/sh</span>
+            </p>
           </div>
         </div>
-        <h2 className="font-display text-2xl font-bold text-ink tracking-tight">{trade.title}</h2>
-        <p className="text-sm font-body text-muted mt-0.5">{trade.subtitle}</p>
-      </div>
 
-      {/* Move hurdle — updates with live total */}
-      <div className={`px-6 py-4 border-b flex items-center justify-between ${
-        isGreen ? 'bg-brazil-green/[0.04] border-brazil-green/10' : 'bg-brazil-blue/[0.04] border-brazil-blue/10'
-      }`}>
-        <div>
-          <p className="text-xs font-mono text-muted uppercase tracking-widest">Move hurdle vs spot</p>
-          <p className={`font-mono text-3xl font-semibold text-ink mt-0.5 ${loading ? 'animate-pulse opacity-40' : ''}`}>
-            {loading ? trade.moveHurdlePct : `${liveMoveHurdle}%`}
-          </p>
-        </div>
-        <div className="text-right">
-          <p className="text-xs font-mono text-muted uppercase tracking-widest">Total cost</p>
-          <p className={`font-mono text-lg font-semibold mt-0.5 ${accentClass} ${loading ? 'animate-pulse opacity-40' : ''}`}>
-            {loading ? '...' : fmt(displayTotal)}<span className="text-xs text-muted font-normal ml-1">/sh</span>
-          </p>
-        </div>
-      </div>
-
-      {/* Live option legs */}
-      <div className="px-6 pt-4">
-        <p className="text-xs font-mono text-muted uppercase tracking-widest mb-1">Option Legs — ${trade.strike} Strike</p>
-        <p className="text-xs font-mono text-muted/60 mb-3">{trade.expiry}</p>
-
+        {/* Option legs */}
+        <p className="label mb-3">Option legs · ${trade.strike} strike</p>
         {loading ? (
-          <div className="space-y-3 py-4">
-            {[0, 1].map((i) => (
-              <div key={i} className="h-20 rounded-xl bg-border/30 animate-pulse" />
+          <div className="space-y-2.5">
+            {[0, 1].map(i => (
+              <div key={i} className="h-16 rounded-lg bg-rule/50 animate-pulse" />
             ))}
           </div>
         ) : liveStraddle ? (
-          <>
-            <OptionLegRow
-              leg={liveStraddle.call}
-              type="Call"
-              accentColor={accentClass}
-              mockLast={trade.callPremium}
-            />
-            <OptionLegRow
-              leg={liveStraddle.put}
-              type="Put"
-              accentColor={accentClass}
-              mockLast={trade.putPremium}
-            />
-          </>
+          <div className="space-y-0">
+            <OptionLegRow leg={liveStraddle.call} type="Call" accentColor={accentClass} mockLast={trade.callPremium} />
+            <OptionLegRow leg={liveStraddle.put} type="Put" accentColor={accentClass} mockLast={trade.putPremium} />
+          </div>
         ) : null}
-      </div>
 
-      {/* Straddle totals row */}
-      {!loading && liveStraddle && (
-        <div className="mx-6 mb-4 mt-3 rounded-xl border border-border bg-paper p-4">
-          <p className="text-xs font-mono text-muted uppercase tracking-widest mb-3">Straddle Total</p>
-          <div className="grid grid-cols-4 gap-2">
-            {[
-              { label: 'Bid', value: fmt(liveStraddle.totalBid) },
-              { label: 'Ask', value: fmt(liveStraddle.totalAsk) },
-              { label: 'Mid', value: fmt(liveStraddle.totalMid) },
-              { label: 'Last', value: fmt(liveStraddle.totalLast) },
-            ].map(({ label, value }) => (
-              <div key={label} className="text-center">
-                <p className="text-xs font-mono text-muted/70 mb-0.5">{label}</p>
-                <p className="font-mono text-sm font-semibold text-ink">{value}</p>
+        {/* Straddle total + live breakevens */}
+        {!loading && liveStraddle && (
+          <div className="mt-4 pt-4 border-t border-rule">
+            <p className="label mb-3">Straddle total</p>
+            <div className="grid grid-cols-4 gap-2 mb-4">
+              {[
+                { l: 'Bid', v: fmt(liveStraddle.totalBid) },
+                { l: 'Ask', v: fmt(liveStraddle.totalAsk) },
+                { l: 'Mid', v: fmt(liveStraddle.totalMid) },
+                { l: 'Last', v: fmt(liveStraddle.totalLast) },
+              ].map(({ l, v }) => (
+                <div key={l} className="text-center bg-canvas rounded-lg py-2">
+                  <p className="label mb-0.5">{l}</p>
+                  <p className={`font-mono text-xs font-medium ${l === 'Mid' ? 'text-ink' : 'text-secondary'}`}>{v}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* Breakevens */}
+            <div className="flex items-center justify-between text-center">
+              <div>
+                <p className="label mb-1">Lower BE</p>
+                <p className={`font-mono text-sm font-medium ${accentClass}`}>${liveBELow.toFixed(2)}</p>
               </div>
-            ))}
-          </div>
-
-          {/* Live breakevens */}
-          <div className="flex justify-between mt-3 pt-3 border-t border-border">
-            <div>
-              <p className="text-xs font-mono text-muted/70 mb-0.5">Lower BE</p>
-              <p className={`font-mono text-sm font-semibold ${accentClass}`}>
-                ${liveBreakevenLow.toFixed(2)}
-              </p>
-            </div>
-            <div className="text-center">
-              <p className="text-xs font-mono text-muted/70 mb-0.5">Strike</p>
-              <p className="font-mono text-sm font-semibold text-ink">${trade.strike}</p>
-            </div>
-            <div className="text-right">
-              <p className="text-xs font-mono text-muted/70 mb-0.5">Upper BE</p>
-              <p className={`font-mono text-sm font-semibold ${accentClass}`}>
-                ${liveBreakevenHigh.toFixed(2)}
-              </p>
+              <div className="flex-1 flex items-center gap-2 px-4">
+                <div className="flex-1 h-px bg-rule" />
+                <p className="font-mono text-xs text-tertiary">${trade.strike}</p>
+                <div className="flex-1 h-px bg-rule" />
+              </div>
+              <div>
+                <p className="label mb-1">Upper BE</p>
+                <p className={`font-mono text-sm font-medium ${accentClass}`}>${liveBEHigh.toFixed(2)}</p>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Why / Risk */}
-      <div className="px-6 pb-5">
-        <div className="rounded-xl bg-paper p-4 space-y-3">
+        {/* Why / risk */}
+        <div className="mt-4 pt-4 border-t border-rule grid grid-cols-2 gap-3">
           <div>
-            <p className="text-xs font-mono text-brazil-green uppercase tracking-widest mb-1">Why choose this</p>
-            <p className="text-xs font-body text-ink leading-relaxed">{trade.why}</p>
+            <p className="font-mono text-[10px] text-br-green uppercase tracking-widest mb-1">Why this</p>
+            <p className="text-xs font-sans text-secondary leading-relaxed">{trade.why}</p>
           </div>
           <div>
-            <p className="text-xs font-mono text-loss uppercase tracking-widest mb-1">Main risk</p>
-            <p className="text-xs font-body text-ink leading-relaxed">{trade.mainRisk}</p>
+            <p className="font-mono text-[10px] text-loss uppercase tracking-widest mb-1">Main risk</p>
+            <p className="text-xs font-sans text-secondary leading-relaxed">{trade.mainRisk}</p>
           </div>
         </div>
       </div>
